@@ -1,87 +1,856 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>RELIANCE GULF HR PORTAL</title>
-    <!-- Add your styling here -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reliance Gulf | Vendor Compliance Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0F2A43;
+    --navy-deep:#0A1D30;
+    --teal:#1B7A72;
+    --teal-light:#E4F1EF;
+    --sand:#F6F3EC;
+    --paper:#FFFFFF;
+    --ink:#1C2833;
+    --slate:#5B6B7A;
+    --line:#E1DED3;
+    --amber:#C97A2B;
+    --amber-bg:#FBF0E1;
+    --red:#B3261E;
+    --red-bg:#FBEAE9;
+    --green:#2F7A4D;
+    --green-bg:#E9F4EC;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(15,42,67,0.06), 0 4px 16px rgba(15,42,67,0.06);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Libre Franklin', sans-serif;
+    background:var(--sand);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Space Grotesk', sans-serif;
+    margin:0;
+    color:var(--navy-deep);
+  }
+
+  /* ---------- HEADER ---------- */
+  header.top{
+    background:linear-gradient(120deg,var(--navy-deep) 0%,var(--navy) 60%,#123C55 100%);
+    color:#fff;
+    padding:22px clamp(16px,4vw,40px);
+    position:relative;
+    overflow:hidden;
+  }
+  header.top::after{
+    content:"";
+    position:absolute;
+    right:-40px; top:-60px;
+    width:260px; height:260px;
+    background:radial-gradient(circle at center, rgba(27,122,114,0.35), transparent 70%);
+  }
+  .brand{
+    display:flex; align-items:center; gap:14px;
+    position:relative; z-index:1;
+  }
+  .brand-mark{
+    width:42px;height:42px;border-radius:9px;
+    background:var(--teal);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;
+    color:#fff;
+    flex-shrink:0;
+  }
+  .brand-text .eyebrow{
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:#9FC7C1; font-weight:600;
+  }
+  .brand-text h1{ color:#fff; font-size:21px; letter-spacing:.01em;}
+
+  nav.tabs{
+    display:flex; gap:6px; margin-top:20px;
+    position:relative; z-index:1;
+    border-bottom:1px solid rgba(255,255,255,0.14);
+  }
+  nav.tabs button{
+    appearance:none; border:none; background:none; cursor:pointer;
+    color:#B7C6D3; font-family:'Space Grotesk',sans-serif;
+    font-size:14.5px; font-weight:600; letter-spacing:.01em;
+    padding:11px 18px; border-radius:8px 8px 0 0;
+    position:relative; top:1px;
+  }
+  nav.tabs button.active{
+    color:#fff; background:var(--sand);
+  }
+  nav.tabs button:not(.active):hover{ color:#fff; }
+
+  /* ---------- LAYOUT ---------- */
+  main{ padding:28px clamp(16px,4vw,40px) 60px; max-width:1280px; margin:0 auto; }
+  .portal{ display:none; }
+  .portal.active{ display:block; }
+
+  .section-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    margin-bottom:16px;
+  }
+  .section-head h2{ font-size:22px; }
+  .section-head p{ color:var(--slate); font-size:13.5px; margin-top:4px; }
+
+  .stat-row{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:12px; margin-bottom:24px;
+  }
+  .stat-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px 16px; box-shadow:var(--shadow);
+  }
+  .stat-card .num{ font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:var(--navy-deep); }
+  .stat-card .label{ font-size:12px; color:var(--slate); text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
+  .stat-card.warn .num{ color:var(--amber); }
+  .stat-card.bad .num{ color:var(--red); }
+
+  .card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:22px; margin-bottom:22px;
+  }
+  .card h3{ font-size:16px; margin-bottom:14px; display:flex; align-items:center; gap:8px;}
+  .card h3 .tag{
+    font-size:10.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    background:var(--teal-light); color:var(--teal); padding:3px 8px; border-radius:20px;
+  }
+
+  form.grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px 16px;
+  }
+  @media (max-width:800px){ form.grid{ grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:560px){ form.grid{ grid-template-columns:1fr;} }
+
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:12px; font-weight:600; color:var(--slate); }
+  .field input, .field select{
+    font-family:inherit; font-size:14px; padding:9px 10px;
+    border:1px solid var(--line); border-radius:7px; background:#fff; color:var(--ink);
+  }
+  .field input:focus, .field select:focus{
+    outline:none; border-color:var(--teal); box-shadow:0 0 0 3px var(--teal-light);
+  }
+  .field.full{ grid-column:1 / -1; }
+  .field.docs{ grid-column:1 / -1; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  @media (max-width:560px){ .field.docs{ grid-template-columns:1fr; } }
+  .field.docs .doc-item{ display:flex; flex-direction:column; gap:5px; }
+  .field.docs .doc-item span{ font-size:12px; font-weight:600; color:var(--slate); }
+  .field.docs input[type=file]{ font-size:12.5px; }
+
+  .form-actions{ grid-column:1/-1; display:flex; gap:10px; margin-top:6px; }
+  button.btn{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px;
+    border:none; border-radius:7px; padding:10px 18px; cursor:pointer;
+    background:var(--navy); color:#fff; letter-spacing:.01em;
+  }
+  button.btn:hover{ background:var(--navy-deep); }
+  button.btn.secondary{ background:#fff; color:var(--navy); border:1px solid var(--line); }
+  button.btn.secondary:hover{ background:var(--sand); }
+  button.btn.teal{ background:var(--teal); }
+  button.btn.teal:hover{ background:#155f58; }
+  button.btn.danger-outline{ background:#fff; color:var(--red); border:1px solid #EBC9C7; }
+  button.btn.danger-outline:hover{ background:var(--red-bg); }
+  button.btn.small{ padding:6px 12px; font-size:12.5px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  thead th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--slate); border-bottom:1px solid var(--line); padding:9px 10px; white-space:nowrap;
+  }
+  tbody td{ padding:11px 10px; border-bottom:1px solid #EFEDE4; vertical-align:top; }
+  tbody tr:hover{ background:#FBFAF6; }
+  .table-wrap{ overflow-x:auto; }
+  .empty-row td{ text-align:center; color:var(--slate); padding:28px; font-style:normal; }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px;
+  }
+  .pill.green{ background:var(--green-bg); color:var(--green); }
+  .pill.amber{ background:var(--amber-bg); color:var(--amber); }
+  .pill.red{ background:var(--red-bg); color:var(--red); }
+  .pill.gray{ background:#EEECE3; color:var(--slate); }
+
+  .docs-cell a{ color:var(--teal); text-decoration:none; font-size:12.5px; display:block; }
+  .docs-cell span.none{ color:var(--slate); font-size:12.5px; }
+
+  .row-actions{ display:flex; gap:6px; }
+  .row-actions button{
+    border:none; background:none; cursor:pointer; font-size:12px; color:var(--slate);
+    text-decoration:underline; padding:0; font-family:inherit;
+  }
+  .row-actions button:hover{ color:var(--navy); }
+
+  .subtabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .subtabs button{
+    font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600;
+    border:1px solid var(--line); background:#fff; color:var(--slate);
+    padding:7px 14px; border-radius:20px; cursor:pointer;
+  }
+  .subtabs button.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--navy-deep); color:#fff; padding:11px 20px; border-radius:8px;
+    font-size:13.5px; font-weight:500; box-shadow:0 8px 24px rgba(0,0,0,0.25);
+    opacity:0; pointer-events:none; transition:all .25s ease; z-index:50;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .helper-note{
+    font-size:12px; color:var(--slate); background:var(--teal-light); border:1px solid #CFE6E2;
+    padding:9px 12px; border-radius:7px; margin-bottom:16px;
+  }
+
+  select#site-lookup{ max-width:360px; }
+
+  @media print{
+    header.top, .card form, .no-print, nav.tabs, .subtabs, .form-actions{ display:none !important; }
+    body{ background:#fff; }
+    .card{ box-shadow:none; border:1px solid #ccc; }
+  }
+</style>
 </head>
 <body>
 
-    <!-- NAVIGATION -->
-    <nav>
-        <ul>
-            <li><a href="#subcontractor">Sub-Contractor Portal</a></li>
-            <li><a href="#client">Client Portal</a></li>
-        </ul>
-    </nav>
+<header class="top">
+  <div class="brand">
+    <div class="brand-mark">RG</div>
+    <div class="brand-text">
+      <div class="eyebrow">Reliance Gulf</div>
+      <h1>Vendor Compliance Portal</h1>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-portal="subcontractor">Sub-Contractor Portal</button>
+    <button class="tab-btn" data-portal="client">Client Portal</button>
+  </nav>
+</header>
 
-    <!-- SUB-CONTRACTOR PORTAL -->
-    <section id="subcontractor">
-        <h2>Sub-Contractor Portal</h2>
-        <form id="subcon-form">
-            <input type="text" placeholder="Name" required>
-            <input type="text" placeholder="Trade License" required>
-            <input type="date" placeholder="License Expiry Date" required>
-            <input type="text" placeholder="TRN Number" required>
-            <input type="text" placeholder="Contact Person Name" required>
-            <input type="tel" placeholder="Contact Number" required>
-            <input type="email" placeholder="Email" required>
-            <input type="text" placeholder="State of License" required>
-            <input type="text" placeholder="ICV" required>
-            
-            <h3>Upload Documents</h3>
-            <label>License: <input type="file"></label>
-            <label>VAT Certificate: <input type="file"></label>
-            <label>Bank Account Letter: <input type="file"></label>
-            <button type="submit">Save</button>
-        </form>
-        <button onclick="exportTable('subcon-table')">Export to Excel/PDF</button>
-    </section>
+<main>
 
-    <!-- CLIENT PORTAL -->
-    <section id="client">
-        <h2>Client Portal</h2>
-        <form id="client-form">
-            <input type="text" placeholder="Name" required>
-            <input type="text" placeholder="Trade License" required>
-            <input type="date" placeholder="License Expiry Date" required>
-            <input type="text" placeholder="TRN Number" required>
-            <input type="tel" placeholder="Contact Number" required>
-            <input type="email" placeholder="Email" required>
-            <input type="text" placeholder="State of License" required>
-            <input type="text" placeholder="ICV" required>
-            
-            <h3>Active Projects</h3>
-            <input type="text" placeholder="Project Name">
-            <input type="text" placeholder="Location">
-            <input type="text" placeholder="State">
-            
-            <h3>Upload Documents</h3>
-            <label>License: <input type="file"></label>
-            <label>VAT Certificate: <input type="file"></label>
-            <label>Bank Account Letter: <input type="file"></label>
-            <button type="submit">Save</button>
-        </form>
-        <button onclick="exportTable('client-table')">Export to Excel/PDF</button>
-    </section>
+  <!-- ============ SUB-CONTRACTOR PORTAL ============ -->
+  <section id="subcontractor" class="portal active">
 
-    <script>
-        // 30-Day Expiry Notification Logic
-        function checkExpiry(expiryDate) {
-            const today = new Date();
-            const expiry = new Date(expiryDate);
-            const diffTime = expiry - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays <= 30 && diffDays >= 0) {
-                alert("Alert: A document is expiring within 30 days!");
-            }
-        }
-        
-        function exportTable(tableId) {
-            // Placeholder for Export functionality
-            console.log("Exporting " + tableId + "...");
-        }
-    </script>
+    <div class="stat-row" id="subcon-stats"></div>
+
+    <div class="card">
+      <h3>Add Sub-Contractor <span class="tag" id="subcon-form-mode">New</span></h3>
+      <form class="grid" id="subcon-form">
+        <input type="hidden" id="subcon-id">
+
+        <div class="field"><label>Sub-Contractor Name</label>
+          <input type="text" id="subcon-name" required></div>
+
+        <div class="field"><label>Trade License Expiry</label>
+          <input type="date" id="subcon-license-expiry" required></div>
+
+        <div class="field"><label>TRN Number</label>
+          <input type="text" id="subcon-trn" required></div>
+
+        <div class="field"><label>State</label>
+          <input type="text" id="subcon-state" placeholder="e.g. Abu Dhabi" required></div>
+
+        <div class="field"><label>ICV Score</label>
+          <input type="text" id="subcon-icv-score" placeholder="e.g. 62%" required></div>
+
+        <div class="field"><label>ICV Expiry</label>
+          <input type="date" id="subcon-icv-expiry" required></div>
+
+        <div class="field"><label>Contact Person</label>
+          <input type="text" id="subcon-contact-person" required></div>
+
+        <div class="field"><label>Contact Number</label>
+          <input type="tel" id="subcon-contact-number" required></div>
+
+        <div class="field"><label>Email</label>
+          <input type="email" id="subcon-email" required></div>
+
+        <div class="field docs">
+          <div class="doc-item"><span>Trade License</span><input type="file" id="subcon-doc-license"></div>
+          <div class="doc-item"><span>VAT Certificate</span><input type="file" id="subcon-doc-vat"></div>
+          <div class="doc-item"><span>ICV Certificate</span><input type="file" id="subcon-doc-icv"></div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn teal">Save Sub-Contractor</button>
+          <button type="button" class="btn secondary" id="subcon-cancel-edit" style="display:none;">Cancel edit</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="section-head">
+        <h3 style="margin-bottom:0;">Sub-Contractor Register</h3>
+        <div style="display:flex; gap:8px;">
+          <button class="btn secondary small" onclick="exportCSV('subcontractors')">Export CSV</button>
+          <button class="btn secondary small" onclick="window.print()">Export PDF</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Name</th><th>TRN</th><th>State</th><th>License Expiry</th>
+            <th>ICV Score</th><th>ICV Expiry</th><th>Contact</th><th>Documents</th><th></th>
+          </tr></thead>
+          <tbody id="subcon-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CLIENT PORTAL ============ -->
+  <section id="client" class="portal">
+
+    <div class="stat-row" id="client-stats"></div>
+
+    <div class="card">
+      <h3>Add Client <span class="tag" id="client-form-mode">New</span></h3>
+      <form class="grid" id="client-form">
+        <input type="hidden" id="client-id">
+
+        <div class="field"><label>Client Name</label>
+          <input type="text" id="client-name" required></div>
+
+        <div class="field"><label>Trade License Expiry</label>
+          <input type="date" id="client-license-expiry" required></div>
+
+        <div class="field"><label>TRN Number</label>
+          <input type="text" id="client-trn" required></div>
+
+        <div class="field"><label>State</label>
+          <input type="text" id="client-state" placeholder="e.g. Dubai" required></div>
+
+        <div class="field"><label>Contact Person</label>
+          <input type="text" id="client-contact-person" required></div>
+
+        <div class="field"><label>Contact Number</label>
+          <input type="tel" id="client-contact-number" required></div>
+
+        <div class="field"><label>Email</label>
+          <input type="email" id="client-email" required></div>
+
+        <div class="field docs">
+          <div class="doc-item"><span>Trade License</span><input type="file" id="client-doc-license"></div>
+          <div class="doc-item"><span>VAT Certificate</span><input type="file" id="client-doc-vat"></div>
+          <div class="doc-item"><span>Others</span><input type="file" id="client-doc-others"></div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn teal">Save Client</button>
+          <button type="button" class="btn secondary" id="client-cancel-edit" style="display:none;">Cancel edit</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="section-head">
+        <h3 style="margin-bottom:0;">Client Register</h3>
+        <div style="display:flex; gap:8px;">
+          <button class="btn secondary small" onclick="exportCSV('clients')">Export CSV</button>
+          <button class="btn secondary small" onclick="window.print()">Export PDF</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Name</th><th>TRN</th><th>State</th><th>License Expiry</th>
+            <th>Contact</th><th>Documents</th><th></th>
+          </tr></thead>
+          <tbody id="client-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="card">
+      <h3>Projects</h3>
+      <p class="helper-note">
+        Every project logged here becomes available in the <strong>Site Name</strong> list used when adding an
+        employee to a site. Mark a project inactive once it wraps up — its full record, including start and
+        end dates, stays in the Completed Projects history below.
+      </p>
+
+      <form class="grid" id="project-form" style="margin-bottom:22px;">
+        <input type="hidden" id="project-id">
+        <div class="field"><label>Client</label>
+          <select id="project-client" required></select></div>
+        <div class="field"><label>Project Name</label>
+          <input type="text" id="project-name" required></div>
+        <div class="field"><label>Project Location</label>
+          <input type="text" id="project-location" required></div>
+        <div class="field"><label>State</label>
+          <input type="text" id="project-state" required></div>
+        <div class="field"><label>Start Date</label>
+          <input type="date" id="project-start" required></div>
+        <div class="form-actions">
+          <button type="submit" class="btn">Add Project</button>
+        </div>
+      </form>
+
+      <div class="subtabs">
+        <button class="subtab-btn active" data-projtab="active">Active Projects</button>
+        <button class="subtab-btn" data-projtab="inactive">Completed Projects</button>
+      </div>
+
+      <div class="table-wrap" id="active-projects-wrap">
+        <table>
+          <thead><tr><th>Project</th><th>Client</th><th>Location</th><th>State</th><th>Start Date</th><th></th></tr></thead>
+          <tbody id="active-projects-body"></tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap" id="inactive-projects-wrap" style="display:none;">
+        <table>
+          <thead><tr><th>Project</th><th>Client</th><th>Location</th><th>State</th><th>Start Date</th><th>End Date</th></tr></thead>
+          <tbody id="inactive-projects-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Site Name Lookup <span class="tag">Active projects only</span></h3>
+      <p style="font-size:13px; color:var(--slate); margin-bottom:10px;">
+        This is the same list an employee record will pull from when you assign someone to a site.
+      </p>
+      <div class="field">
+        <select id="site-lookup"></select>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------------------------------------------------------
+   DATA LAYER — persisted per-user via window.storage
+--------------------------------------------------------------- */
+let subcontractors = [];
+let clients = [];
+let projects = [];
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+async function loadAll(){
+  subcontractors = await safeGet('subcontractors', []);
+  clients = await safeGet('clients', []);
+  projects = await safeGet('projects', []);
+}
+async function safeGet(key, fallback){
+  try{
+    const res = await window.storage.get(key, false);
+    return res ? JSON.parse(res.value) : fallback;
+  }catch(e){ return fallback; }
+}
+async function saveKey(key, value){
+  try{ await window.storage.set(key, JSON.stringify(value), false); }
+  catch(e){ console.error('Storage error', e); showToast('Could not save — storage unavailable'); }
+}
+const saveSubcon = () => saveKey('subcontractors', subcontractors);
+const saveClients = () => saveKey('clients', clients);
+const saveProjects = () => saveKey('projects', projects);
+
+/* ---------------------------------------------------------------
+   HELPERS
+--------------------------------------------------------------- */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(dateStr);
+  return Math.ceil((d - today) / 86400000);
+}
+
+function expiryPill(dateStr){
+  if(!dateStr) return '<span class="pill gray">No date</span>';
+  const days = daysUntil(dateStr);
+  const formatted = new Date(dateStr).toLocaleDateString('en-GB');
+  if(days < 0) return `<span class="pill red">Expired ${formatted}</span>`;
+  if(days <= 30) return `<span class="pill amber">${formatted} · ${days}d left</span>`;
+  return `<span class="pill green">${formatted}</span>`;
+}
+
+function docsCell(docs){
+  const labels = Object.entries(docs).filter(([,v])=>v);
+  if(!labels.length) return '<span class="none">No files</span>';
+  return labels.map(([k,v])=>`<span>${v}</span>`).join('');
+}
+
+function exportCSV(kind){
+  const rows = kind === 'subcontractors' ? subcontractors : clients;
+  if(!rows.length){ showToast('Nothing to export yet'); return; }
+  let headers, lines;
+  if(kind === 'subcontractors'){
+    headers = ['Name','TRN','State','License Expiry','ICV Score','ICV Expiry','Contact Person','Contact Number','Email'];
+    lines = rows.map(r => [r.name,r.trn,r.state,r.licenseExpiry,r.icvScore,r.icvExpiry,r.contactPerson,r.contactNumber,r.email]);
+  } else {
+    headers = ['Name','TRN','State','License Expiry','Contact Person','Contact Number','Email'];
+    lines = rows.map(r => [r.name,r.trn,r.state,r.licenseExpiry,r.contactPerson,r.contactNumber,r.email]);
+  }
+  const csv = [headers, ...lines].map(row => row.map(c => `"${(c ?? '').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${kind}-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+/* ---------------------------------------------------------------
+   TAB NAVIGATION
+--------------------------------------------------------------- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.portal').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.portal).classList.add('active');
+  });
+});
+
+document.querySelectorAll('.subtab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.subtab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const active = btn.dataset.projtab === 'active';
+    document.getElementById('active-projects-wrap').style.display = active ? '' : 'none';
+    document.getElementById('inactive-projects-wrap').style.display = active ? 'none' : '';
+  });
+});
+
+/* ---------------------------------------------------------------
+   SUB-CONTRACTOR PORTAL
+--------------------------------------------------------------- */
+const subconForm = document.getElementById('subcon-form');
+
+subconForm.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const id = document.getElementById('subcon-id').value || uid();
+  const existing = subcontractors.find(s=>s.id===id);
+  const record = {
+    id,
+    name: document.getElementById('subcon-name').value.trim(),
+    licenseExpiry: document.getElementById('subcon-license-expiry').value,
+    trn: document.getElementById('subcon-trn').value.trim(),
+    state: document.getElementById('subcon-state').value.trim(),
+    icvScore: document.getElementById('subcon-icv-score').value.trim(),
+    icvExpiry: document.getElementById('subcon-icv-expiry').value,
+    contactPerson: document.getElementById('subcon-contact-person').value.trim(),
+    contactNumber: document.getElementById('subcon-contact-number').value.trim(),
+    email: document.getElementById('subcon-email').value.trim(),
+    docs: {
+      license: document.getElementById('subcon-doc-license').files[0]?.name || existing?.docs?.license || '',
+      vat: document.getElementById('subcon-doc-vat').files[0]?.name || existing?.docs?.vat || '',
+      icv: document.getElementById('subcon-doc-icv').files[0]?.name || existing?.docs?.icv || '',
+    }
+  };
+  if(existing){
+    Object.assign(existing, record);
+  } else {
+    subcontractors.push(record);
+  }
+  await saveSubcon();
+  resetSubconForm();
+  renderSubcon();
+  showToast(existing ? 'Sub-contractor updated' : 'Sub-contractor added');
+});
+
+document.getElementById('subcon-cancel-edit').addEventListener('click', resetSubconForm);
+
+function resetSubconForm(){
+  subconForm.reset();
+  document.getElementById('subcon-id').value = '';
+  document.getElementById('subcon-form-mode').textContent = 'New';
+  document.getElementById('subcon-cancel-edit').style.display = 'none';
+}
+
+function editSubcon(id){
+  const r = subcontractors.find(s=>s.id===id);
+  if(!r) return;
+  document.getElementById('subcon-id').value = r.id;
+  document.getElementById('subcon-name').value = r.name;
+  document.getElementById('subcon-license-expiry').value = r.licenseExpiry;
+  document.getElementById('subcon-trn').value = r.trn;
+  document.getElementById('subcon-state').value = r.state;
+  document.getElementById('subcon-icv-score').value = r.icvScore;
+  document.getElementById('subcon-icv-expiry').value = r.icvExpiry;
+  document.getElementById('subcon-contact-person').value = r.contactPerson;
+  document.getElementById('subcon-contact-number').value = r.contactNumber;
+  document.getElementById('subcon-email').value = r.email;
+  document.getElementById('subcon-form-mode').textContent = 'Editing';
+  document.getElementById('subcon-cancel-edit').style.display = 'inline-block';
+  document.getElementById('subcontractor').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+async function deleteSubcon(id){
+  if(!confirm('Remove this sub-contractor record?')) return;
+  subcontractors = subcontractors.filter(s=>s.id!==id);
+  await saveSubcon();
+  renderSubcon();
+  showToast('Sub-contractor removed');
+}
+
+function renderSubcon(){
+  const body = document.getElementById('subcon-table-body');
+  if(!subcontractors.length){
+    body.innerHTML = `<tr class="empty-row"><td colspan="9">No sub-contractors yet — add one above.</td></tr>`;
+  } else {
+    body.innerHTML = subcontractors.map(r=>`
+      <tr>
+        <td><strong>${escapeHtml(r.name)}</strong></td>
+        <td>${escapeHtml(r.trn)}</td>
+        <td>${escapeHtml(r.state)}</td>
+        <td>${expiryPill(r.licenseExpiry)}</td>
+        <td>${escapeHtml(r.icvScore)}</td>
+        <td>${expiryPill(r.icvExpiry)}</td>
+        <td>${escapeHtml(r.contactPerson)}<br><span style="color:var(--slate); font-size:12px;">${escapeHtml(r.contactNumber)} · ${escapeHtml(r.email)}</span></td>
+        <td class="docs-cell">${docsCell({License:r.docs.license, VAT:r.docs.vat, ICV:r.docs.icv})}</td>
+        <td class="row-actions">
+          <button onclick="editSubcon('${r.id}')">Edit</button>
+          <button onclick="deleteSubcon('${r.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  const expiringLicense = subcontractors.filter(r=>{const d=daysUntil(r.licenseExpiry); return d!==null && d<=30;}).length;
+  const expiringIcv = subcontractors.filter(r=>{const d=daysUntil(r.icvExpiry); return d!==null && d<=30;}).length;
+  document.getElementById('subcon-stats').innerHTML = `
+    <div class="stat-card"><div class="num">${subcontractors.length}</div><div class="label">Sub-Contractors</div></div>
+    <div class="stat-card ${expiringLicense?'warn':''}"><div class="num">${expiringLicense}</div><div class="label">Licenses expiring / expired</div></div>
+    <div class="stat-card ${expiringIcv?'warn':''}"><div class="num">${expiringIcv}</div><div class="label">ICV certs expiring / expired</div></div>
+  `;
+}
+
+/* ---------------------------------------------------------------
+   CLIENT PORTAL
+--------------------------------------------------------------- */
+const clientForm = document.getElementById('client-form');
+
+clientForm.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const id = document.getElementById('client-id').value || uid();
+  const existing = clients.find(c=>c.id===id);
+  const record = {
+    id,
+    name: document.getElementById('client-name').value.trim(),
+    licenseExpiry: document.getElementById('client-license-expiry').value,
+    trn: document.getElementById('client-trn').value.trim(),
+    state: document.getElementById('client-state').value.trim(),
+    contactPerson: document.getElementById('client-contact-person').value.trim(),
+    contactNumber: document.getElementById('client-contact-number').value.trim(),
+    email: document.getElementById('client-email').value.trim(),
+    docs: {
+      license: document.getElementById('client-doc-license').files[0]?.name || existing?.docs?.license || '',
+      vat: document.getElementById('client-doc-vat').files[0]?.name || existing?.docs?.vat || '',
+      others: document.getElementById('client-doc-others').files[0]?.name || existing?.docs?.others || '',
+    }
+  };
+  if(existing){
+    Object.assign(existing, record);
+  } else {
+    clients.push(record);
+  }
+  await saveClients();
+  resetClientForm();
+  renderClients();
+  populateProjectClientDropdown();
+  showToast(existing ? 'Client updated' : 'Client added');
+});
+
+document.getElementById('client-cancel-edit').addEventListener('click', resetClientForm);
+
+function resetClientForm(){
+  clientForm.reset();
+  document.getElementById('client-id').value = '';
+  document.getElementById('client-form-mode').textContent = 'New';
+  document.getElementById('client-cancel-edit').style.display = 'none';
+}
+
+function editClient(id){
+  const r = clients.find(c=>c.id===id);
+  if(!r) return;
+  document.getElementById('client-id').value = r.id;
+  document.getElementById('client-name').value = r.name;
+  document.getElementById('client-license-expiry').value = r.licenseExpiry;
+  document.getElementById('client-trn').value = r.trn;
+  document.getElementById('client-state').value = r.state;
+  document.getElementById('client-contact-person').value = r.contactPerson;
+  document.getElementById('client-contact-number').value = r.contactNumber;
+  document.getElementById('client-email').value = r.email;
+  document.getElementById('client-form-mode').textContent = 'Editing';
+  document.getElementById('client-cancel-edit').style.display = 'inline-block';
+  document.getElementById('client').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+async function deleteClient(id){
+  if(!confirm('Remove this client record? Linked projects will remain but show as unlinked.')) return;
+  clients = clients.filter(c=>c.id!==id);
+  await saveClients();
+  renderClients();
+  populateProjectClientDropdown();
+  showToast('Client removed');
+}
+
+function renderClients(){
+  const body = document.getElementById('client-table-body');
+  if(!clients.length){
+    body.innerHTML = `<tr class="empty-row"><td colspan="7">No clients yet — add one above.</td></tr>`;
+  } else {
+    body.innerHTML = clients.map(r=>`
+      <tr>
+        <td><strong>${escapeHtml(r.name)}</strong></td>
+        <td>${escapeHtml(r.trn)}</td>
+        <td>${escapeHtml(r.state)}</td>
+        <td>${expiryPill(r.licenseExpiry)}</td>
+        <td>${escapeHtml(r.contactPerson)}<br><span style="color:var(--slate); font-size:12px;">${escapeHtml(r.contactNumber)} · ${escapeHtml(r.email)}</span></td>
+        <td class="docs-cell">${docsCell({License:r.docs.license, VAT:r.docs.vat, Others:r.docs.others})}</td>
+        <td class="row-actions">
+          <button onclick="editClient('${r.id}')">Edit</button>
+          <button onclick="deleteClient('${r.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  const expiring = clients.filter(r=>{const d=daysUntil(r.licenseExpiry); return d!==null && d<=30;}).length;
+  const activeProjCount = projects.filter(p=>p.status==='active').length;
+  document.getElementById('client-stats').innerHTML = `
+    <div class="stat-card"><div class="num">${clients.length}</div><div class="label">Clients</div></div>
+    <div class="stat-card ${expiring?'warn':''}"><div class="num">${expiring}</div><div class="label">Licenses expiring / expired</div></div>
+    <div class="stat-card"><div class="num">${activeProjCount}</div><div class="label">Active Projects</div></div>
+  `;
+}
+
+/* ---------------------------------------------------------------
+   PROJECTS
+--------------------------------------------------------------- */
+function populateProjectClientDropdown(){
+  const sel = document.getElementById('project-client');
+  const current = sel.value;
+  sel.innerHTML = clients.length
+    ? clients.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('')
+    : `<option value="">Add a client first</option>`;
+  if(current) sel.value = current;
+}
+
+document.getElementById('project-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  if(!clients.length){ showToast('Add a client before creating a project'); return; }
+  const record = {
+    id: uid(),
+    clientId: document.getElementById('project-client').value,
+    name: document.getElementById('project-name').value.trim(),
+    location: document.getElementById('project-location').value.trim(),
+    state: document.getElementById('project-state').value.trim(),
+    startDate: document.getElementById('project-start').value,
+    endDate: '',
+    status: 'active'
+  };
+  projects.push(record);
+  await saveProjects();
+  document.getElementById('project-form').reset();
+  renderProjects();
+  renderClients();
+  showToast('Project added');
+});
+
+async function completeProject(id){
+  const p = projects.find(p=>p.id===id);
+  if(!p) return;
+  const endDate = prompt('Project completion date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
+  if(!endDate) return;
+  p.endDate = endDate;
+  p.status = 'inactive';
+  await saveProjects();
+  renderProjects();
+  renderClients();
+  showToast(`"${p.name}" marked as completed`);
+}
+
+async function reactivateProject(id){
+  const p = projects.find(p=>p.id===id);
+  if(!p) return;
+  p.status = 'active';
+  p.endDate = '';
+  await saveProjects();
+  renderProjects();
+  renderClients();
+  showToast(`"${p.name}" reactivated`);
+}
+
+function clientName(clientId){
+  return clients.find(c=>c.id===clientId)?.name || '—';
+}
+
+function renderProjects(){
+  const active = projects.filter(p=>p.status==='active');
+  const inactive = projects.filter(p=>p.status==='inactive');
+
+  const activeBody = document.getElementById('active-projects-body');
+  activeBody.innerHTML = active.length ? active.map(p=>`
+    <tr>
+      <td><strong>${escapeHtml(p.name)}</strong></td>
+      <td>${escapeHtml(clientName(p.clientId))}</td>
+      <td>${escapeHtml(p.location)}</td>
+      <td>${escapeHtml(p.state)}</td>
+      <td>${p.startDate ? new Date(p.startDate).toLocaleDateString('en-GB') : '—'}</td>
+      <td class="row-actions"><button onclick="completeProject('${p.id}')">Mark complete</button></td>
+    </tr>
+  `).join('') : `<tr class="empty-row"><td colspan="6">No active projects yet.</td></tr>`;
+
+  const inactiveBody = document.getElementById('inactive-projects-body');
+  inactiveBody.innerHTML = inactive.length ? inactive.map(p=>`
+    <tr>
+      <td><strong>${escapeHtml(p.name)}</strong></td>
+      <td>${escapeHtml(clientName(p.clientId))}</td>
+      <td>${escapeHtml(p.location)}</td>
+      <td>${escapeHtml(p.state)}</td>
+      <td>${p.startDate ? new Date(p.startDate).toLocaleDateString('en-GB') : '—'}</td>
+      <td>${p.endDate ? new Date(p.endDate).toLocaleDateString('en-GB') : '—'} <button style="margin-left:8px;" onclick="reactivateProject('${p.id}')">Reactivate</button></td>
+    </tr>
+  `).join('') : `<tr class="empty-row"><td colspan="6">No completed projects yet.</td></tr>`;
+
+  const lookup = document.getElementById('site-lookup');
+  lookup.innerHTML = active.length
+    ? active.map(p=>`<option value="${p.id}">${escapeHtml(p.name)} — ${escapeHtml(p.location)}, ${escapeHtml(p.state)}</option>`).join('')
+    : `<option value="">No active project sites yet</option>`;
+}
+
+/* ---------------------------------------------------------------
+   UTIL + INIT
+--------------------------------------------------------------- */
+function escapeHtml(str){
+  return (str ?? '').toString()
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function init(){
+  await loadAll();
+  renderSubcon();
+  renderClients();
+  populateProjectClientDropdown();
+  renderProjects();
+}
+init();
+</script>
 </body>
 </html>
