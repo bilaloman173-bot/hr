@@ -4960,65 +4960,6 @@
  function renderAssignments(){if(!$('mpv2Body'))return;let month=$('mpv2Month').value||new Date().toISOString().slice(0,7);$('mpv2Month').value=month;let [ms,me]=monthBounds(month);let rows=assignments().filter(a=>new Date(a.mobilizationDate+'T00:00:00')<=me&&(!a.demobilizationDate||new Date(a.demobilizationDate+'T00:00:00')>=ms));$('mpv2Body').innerHTML=rows.map(a=>{let e=employees().find(x=>x.id===a.employeeId);return `<tr><td><strong>${esc(e?.nameEn||a.employeeId)}</strong><br><code>${esc(a.employeeId)}</code></td><td>${esc(a.client)}</td><td>${esc(a.project)}</td><td>${esc(a.designation||e?.designation||'—')}</td><td>${esc(a.mobilizationDate)}</td><td>${esc(a.demobilizationDate||'Present')}</td><td><strong>${workingDays(a,month)}</strong></td><td>${esc(a.status)}</td><td><button class="btn-delete" onclick="mpV2Delete('${esc(a.recordId)}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="9">No manpower records for selected month.</td></tr>'}
  function deleteAssignment(id){if(confirm('Delete this site history record?')){saveAssignments(assignments().filter(a=>a.recordId!==id));render();renderAssignments()}}
  function exportReport(){let table=$('mpv2Body').closest('table').outerHTML;let blob=new Blob(['<html><head><meta charset="utf-8"></head><body>'+table+'
-<style id="universalListToolsStyle">
-  .universal-list-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 12px;padding:10px 12px;background:#f8fafc;border:1px solid #dbe3ee;border-radius:9px}
-  .universal-list-toolbar .ult-left,.universal-list-toolbar .ult-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .universal-list-toolbar input{min-width:220px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;background:white}
-  .universal-list-toolbar button{padding:8px 12px;font-size:12px}
-  .ult-count{font-size:11px;font-weight:700;color:#475569;background:white;border:1px solid #e2e8f0;border-radius:999px;padding:6px 10px}
-  .btn-advanced-filter{background:#7c3aed}.btn-advanced-filter:hover{background:#6d28d9}
-  .btn-clear-filter{background:#64748b}.btn-clear-filter:hover{background:#475569}
-  .advanced-filter-modal{position:fixed;inset:0;background:rgba(15,23,42,.68);z-index:12000;display:none;align-items:center;justify-content:center;padding:18px}
-  .advanced-filter-modal.open{display:flex}
-  .advanced-filter-panel{width:min(900px,96vw);max-height:92vh;overflow:auto;background:white;border-radius:14px;box-shadow:0 24px 60px rgba(15,23,42,.38)}
-  .advanced-filter-header{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;background:linear-gradient(135deg,#1e3a8a,#0f172a);color:white}
-  .advanced-filter-header h3{margin:0;color:white;border:0;padding:0}
-  .advanced-filter-body{padding:18px}
-  .advanced-filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px}
-  .advanced-filter-field label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:5px}
-  .advanced-filter-field input,.advanced-filter-field select{width:100%;padding:9px 10px;border:1px solid #cbd5e1;border-radius:6px;background:white}
-  .advanced-filter-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #e2e8f0}
-  tr.ult-hidden{display:none!important}
-  @media(max-width:700px){.universal-list-toolbar input{min-width:100%;width:100%}.universal-list-toolbar .ult-left,.universal-list-toolbar .ult-right{width:100%}}
-</style>
-
-<div id="advancedFilterModal" class="advanced-filter-modal" aria-hidden="true">
-  <div class="advanced-filter-panel">
-    <div class="advanced-filter-header"><h3 id="advancedFilterTitle">Advanced Filter</h3><button type="button" onclick="ULT.closeAdvancedFilter()" style="background:rgba(255,255,255,.15)">×</button></div>
-    <div class="advanced-filter-body">
-      <div id="advancedFilterGrid" class="advanced-filter-grid"></div>
-      <div class="advanced-filter-actions"><button type="button" class="btn-clear-filter" onclick="ULT.resetAdvancedFilter()">Reset</button><button type="button" onclick="ULT.applyAdvancedFilter()">Apply Filter</button></div>
-    </div>
-  </div>
-</div>
-
-<script id="universalListToolsScript">
-(function(){
- const state={table:null,filters:{},quick:''};
- const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
- const slug=s=>clean(s).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')||'list';
- const visibleRows=t=>Array.from(t.tBodies||[]).flatMap(tb=>Array.from(tb.rows)).filter(r=>!r.classList.contains('ult-hidden'));
- const allRows=t=>Array.from(t.tBodies||[]).flatMap(tb=>Array.from(tb.rows));
- const headers=t=>{const rows=t.tHead?.rows||[]; if(!rows.length)return[]; const first=Array.from(rows[0].cells); return first.map((c,i)=>({i,label:clean(c.innerText)||`Column ${i+1}`}));};
- function titleFor(t){const box=t.closest('.table-container,.form-container,.tab-content');const h=box?.querySelector('h3,h2');return clean(h?.innerText)||t.id||'List'}
- function dataRows(t){return allRows(t).filter(r=>r.cells.length && !r.closest('thead'));}
- function apply(t){if(!t)return;const q=state.table===t?state.quick:'';const fs=state.table===t?state.filters:{};dataRows(t).forEach(r=>{const cells=Array.from(r.cells);const whole=clean(r.innerText).toLowerCase();let ok=!q||whole.includes(q.toLowerCase());for(const [idx,val] of Object.entries(fs)){if(!val)continue;const txt=clean(cells[Number(idx)]?.innerText).toLowerCase();if(!txt.includes(String(val).toLowerCase())){ok=false;break}}r.classList.toggle('ult-hidden',!ok)});updateCount(t)}
- function updateCount(t){const bar=t.previousElementSibling?.classList.contains('universal-list-toolbar')?t.previousElementSibling:null;const el=bar?.querySelector('.ult-count');if(el)el.textContent=`Showing ${visibleRows(t).length} of ${dataRows(t).length}`}
- function exportExcel(t){const clone=t.cloneNode(true);Array.from(clone.querySelectorAll('tr.ult-hidden')).forEach(r=>r.remove());Array.from(clone.querySelectorAll('.action-column,.restricted-action,.client-action,.recruitment-action')).forEach(el=>el.remove());const name=slug(titleFor(t));const html=`<html><head><meta charset="utf-8"><style>table{border-collapse:collapse}th,td{border:1px solid #999;padding:6px}th{background:#1e3a8a;color:white}</style></head><body><h2>${titleFor(t)}</h2>${clone.outerHTML}</body></html>`;const blob=new Blob([html],{type:'application/vnd.ms-excel'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${name}_${new Date().toISOString().slice(0,10)}.xls`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
- function exportPDF(t){const clone=t.cloneNode(true);Array.from(clone.querySelectorAll('tr.ult-hidden')).forEach(r=>r.remove());Array.from(clone.querySelectorAll('.action-column,.restricted-action,.client-action,.recruitment-action')).forEach(el=>el.remove());const wrap=document.createElement('div');wrap.style.padding='12px';wrap.style.background='white';wrap.innerHTML=`<h2 style="color:#1e3a8a;margin-bottom:10px">${titleFor(t)}</h2>`;wrap.appendChild(clone);document.body.appendChild(wrap);const opt={margin:6,filename:`${slug(titleFor(t))}_${new Date().toISOString().slice(0,10)}.pdf`,image:{type:'jpeg',quality:.98},html2canvas:{scale:1.5,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:clone.rows[0]?.cells.length>7?'landscape':'portrait'}};if(window.html2pdf){html2pdf().set(opt).from(wrap).save().then(()=>wrap.remove())}else{window.print();wrap.remove()}}
- function addToolbar(t){if(t.dataset.ultReady||t.closest('#letterPreview,.salary-table-wrap')||t.classList.contains('salary-editor-table')||t.classList.contains('offer-salary-table')||t.classList.contains('form-doc-table'))return;t.dataset.ultReady='1';if(!t.id)t.id='ultTable_'+Math.random().toString(36).slice(2);const bar=document.createElement('div');bar.className='universal-list-toolbar';bar.innerHTML=`<div class="ult-left"><input type="search" placeholder="Quick search in this list..."><button type="button" class="btn-advanced-filter">Advanced Filter</button><button type="button" class="btn-clear-filter">Clear Filter</button><span class="ult-count"></span></div><div class="ult-right"><button type="button" class="btn-excel">Download Excel</button><button type="button" class="btn-pdf">Download PDF</button></div>`;t.parentNode.insertBefore(bar,t);const input=bar.querySelector('input');input.addEventListener('input',()=>{state.table=t;state.quick=input.value;apply(t)});bar.querySelector('.btn-advanced-filter').onclick=()=>openAdvanced(t);bar.querySelector('.btn-clear-filter').onclick=()=>{state.table=t;state.quick='';state.filters={};input.value='';apply(t)};bar.querySelector('.btn-excel').onclick=()=>exportExcel(t);bar.querySelector('.btn-pdf').onclick=()=>exportPDF(t);updateCount(t)}
- function openAdvanced(t){state.table=t;state.filters=state.filters||{};document.getElementById('advancedFilterTitle').textContent=`Advanced Filter — ${titleFor(t)}`;document.getElementById('advancedFilterGrid').innerHTML=headers(t).map(h=>`<div class="advanced-filter-field"><label>${h.label}</label><input data-col="${h.i}" value="${(state.filters[h.i]||'').replace(/"/g,'&quot;')}" placeholder="Contains..."></div>`).join('');document.getElementById('advancedFilterModal').classList.add('open')}
- function closeAdvanced(){document.getElementById('advancedFilterModal').classList.remove('open')}
- function applyAdvanced(){if(!state.table)return;const fs={};document.querySelectorAll('#advancedFilterGrid [data-col]').forEach(x=>{if(x.value.trim())fs[x.dataset.col]=x.value.trim()});state.filters=fs;apply(state.table);closeAdvanced()}
- function resetAdvanced(){document.querySelectorAll('#advancedFilterGrid [data-col]').forEach(x=>x.value='');state.filters={};if(state.table)apply(state.table)}
- function scan(){document.querySelectorAll('.table-container table, #employeeOverviewDetails table').forEach(addToolbar)}
- const observer=new MutationObserver(()=>{clearTimeout(window.__ultTimer);window.__ultTimer=setTimeout(()=>{scan();document.querySelectorAll('table[data-ult-ready="1"]').forEach(updateCount)},120)});
- window.ULT={scan,openAdvancedFilter:openAdvanced,closeAdvancedFilter:closeAdvanced,applyAdvancedFilter:applyAdvanced,resetAdvancedFilter:resetAdvanced,exportExcel,exportPDF};
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{scan();observer.observe(document.body,{childList:true,subtree:true})});else{scan();observer.observe(document.body,{childList:true,subtree:true})}
-})();
-</script>
-
-</body></html>'],{type:'application/vnd.ms-excel'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Site_Manpower_Report_'+$('mpv2Month').value+'.xls';a.click();URL.revokeObjectURL(a.href)}
  function nationalityLogic(){let manual=$('empv2NationalityManual');if(manual)manual.classList.toggle('empv2-hidden',$('empv2Nationality').value!=='Manual Add')} function toggleCicpa(n){let has=!!val('empv2CicpaNo'+n);['empv2CicpaIssue'+n,'empv2CicpaExpiry'+n,'empv2CicpaLocation'+n].forEach(id=>{let el=$(id);if(el&&el.parentElement)el.parentElement.style.display=has?'flex':'none'});let man=$('empv2CicpaManualLocation'+n);if(man&&!has)man.classList.add('empv2-hidden')} window.empV2NationalityChange=nationalityLogic;window.empV2ToggleCicpa=toggleCicpa;window.mpV2LoadProjects=loadActiveProjects;window.empV2CicpaLocationChange=cicpaLocationChange;
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
