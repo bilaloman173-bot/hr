@@ -4959,7 +4959,7 @@
  function monthBounds(v){let [y,m]=v.split('-').map(Number);return [new Date(y,m-1,1),new Date(y,m,0)]}function workingDays(a,month){let [ms,me]=monthBounds(month),s=new Date(a.mobilizationDate+'T00:00:00'),e=a.demobilizationDate?new Date(a.demobilizationDate+'T00:00:00'):me;s=s>ms?s:ms;e=e<me?e:me;return e<s?0:Math.floor((e-s)/86400000)+1}
  function renderAssignments(){if(!$('mpv2Body'))return;let month=$('mpv2Month').value||new Date().toISOString().slice(0,7);$('mpv2Month').value=month;let [ms,me]=monthBounds(month);let rows=assignments().filter(a=>new Date(a.mobilizationDate+'T00:00:00')<=me&&(!a.demobilizationDate||new Date(a.demobilizationDate+'T00:00:00')>=ms));$('mpv2Body').innerHTML=rows.map(a=>{let e=employees().find(x=>x.id===a.employeeId);return `<tr><td><strong>${esc(e?.nameEn||a.employeeId)}</strong><br><code>${esc(a.employeeId)}</code></td><td>${esc(a.client)}</td><td>${esc(a.project)}</td><td>${esc(a.designation||e?.designation||'—')}</td><td>${esc(a.mobilizationDate)}</td><td>${esc(a.demobilizationDate||'Present')}</td><td><strong>${workingDays(a,month)}</strong></td><td>${esc(a.status)}</td><td><button class="btn-delete" onclick="mpV2Delete('${esc(a.recordId)}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="9">No manpower records for selected month.</td></tr>'}
  function deleteAssignment(id){if(confirm('Delete this site history record?')){saveAssignments(assignments().filter(a=>a.recordId!==id));render();renderAssignments()}}
- function exportReport(){let table=$('mpv2Body').closest('table').outerHTML;let blob=new Blob(['<html><head><meta charset="utf-8"></head><body>'+table+'</body></html>'],{type:'application/vnd.ms-excel'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Site_Manpower_Report_'+$('mpv2Month').value+'.xls';a.click();URL.revokeObjectURL(a.href)}
+ function exportReport(){let table=$('mpv2Body').closest('table').outerHTML;let blob=new Blob(['<html><head><meta charset="utf-8"></head><body>'+table+''],{type:'application/vnd.ms-excel'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Site_Manpower_Report_'+$('mpv2Month').value+'.xls';a.click();URL.revokeObjectURL(a.href)}
  function nationalityLogic(){let manual=$('empv2NationalityManual');if(manual)manual.classList.toggle('empv2-hidden',$('empv2Nationality').value!=='Manual Add')} function toggleCicpa(n){let has=!!val('empv2CicpaNo'+n);['empv2CicpaIssue'+n,'empv2CicpaExpiry'+n,'empv2CicpaLocation'+n].forEach(id=>{let el=$(id);if(el&&el.parentElement)el.parentElement.style.display=has?'flex':'none'});let man=$('empv2CicpaManualLocation'+n);if(man&&!has)man.classList.add('empv2-hidden')} window.empV2NationalityChange=nationalityLogic;window.empV2ToggleCicpa=toggleCicpa;window.mpV2LoadProjects=loadActiveProjects;window.empV2CicpaLocationChange=cicpaLocationChange;
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
@@ -4981,5 +4981,89 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',window.refreshEmployeeOverview);else window.refreshEmployeeOverview();
 })();
 </script>
+
+
+<style id="universalListToolsStyle">
+.list-tools-bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:10px 0 14px;padding:11px;background:#f8fafc;border:1px solid #dbe3ee;border-radius:9px}
+.list-tools-left,.list-tools-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.list-tools-search{min-width:230px;padding:9px 11px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;font-size:12px}.list-tools-count{font-size:11px;font-weight:700;color:#64748b}.btn-advanced-filter{background:#475569}.btn-list-excel{background:#15803d}.btn-list-pdf{background:#b91c1c}.advanced-filter-panel{display:none;margin:-6px 0 14px;padding:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px}.advanced-filter-panel.open{display:block}.advanced-filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px}.advanced-filter-item label{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#475569;margin-bottom:4px}.advanced-filter-item input{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;font-size:11px}.list-tools-empty{text-align:center;padding:22px!important;color:#64748b;font-weight:600}.list-tools-hidden{display:none!important}
+@media(max-width:720px){.list-tools-search{min-width:100%;width:100%}.list-tools-left,.list-tools-right{width:100%}.list-tools-bar button{flex:1}}
+</style>
+
+<script id="universalListToolsScript">
+(function(){
+ 'use strict';
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
+ function eligible(table){
+   if(!table||table.dataset.listTools==='1')return false;
+   if(table.closest('#letterPreview,.offer-page,.salary-table-wrap,.document-modal'))return false;
+   return !!table.closest('.table-container,#employeeOverviewDetails,.overview-summary-section');
+ }
+ function titleFor(table){
+   const box=table.closest('.table-container,#employeeOverviewDetails')||table.parentElement;
+   const h=box?.querySelector('h3,h2');
+   return clean(h?.textContent)||clean(table.id)||'List';
+ }
+ function headers(table){
+   const rows=[...table.querySelectorAll('thead tr')];
+   const row=rows.find(r=>[...r.children].some(c=>c.tagName==='TH'&&!c.classList.contains('filter-row')))||rows[0];
+   if(!row)return [];
+   return [...row.children].map((th,i)=>({i,name:clean(th.innerText)||`Column ${i+1}`,skip:th.classList.contains('action-column')||th.classList.contains('restricted-action')||th.classList.contains('client-action')||/action/i.test(clean(th.innerText))}));
+ }
+ function bodyRows(table){return [...(table.tBodies[0]?.rows||[])].filter(r=>!r.dataset.toolsEmpty)}
+ function apply(table){
+   const tool=table._listTools;if(!tool)return;
+   const q=tool.search.value.toLowerCase();
+   const fs=[...tool.panel.querySelectorAll('input[data-col]')].map(x=>({i:+x.dataset.col,v:x.value.toLowerCase().trim()})).filter(x=>x.v);
+   let shown=0,total=0;
+   bodyRows(table).forEach(r=>{
+     if(r.cells.length===1&&/no .*record|no employee|no manpower|no data|no approved/i.test(clean(r.innerText)))return;
+     total++;
+     const text=clean(r.innerText).toLowerCase();
+     const okQ=!q||text.includes(q);
+     const okF=fs.every(f=>clean(r.cells[f.i]?.innerText).toLowerCase().includes(f.v));
+     r.classList.toggle('list-tools-hidden',!(okQ&&okF));
+     if(okQ&&okF)shown++;
+   });
+   tool.count.textContent=`Showing ${shown} of ${total}`;
+ }
+ function visibleData(table){
+   const hs=headers(table).filter(h=>!h.skip);
+   const rows=bodyRows(table).filter(r=>!r.classList.contains('list-tools-hidden')&&r.cells.length>1).map(r=>hs.map(h=>clean(r.cells[h.i]?.innerText)));
+   return {hs,rows};
+ }
+ function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+ function downloadExcel(table){
+   const {hs,rows}=visibleData(table);if(!rows.length)return alert('No visible records to export.');
+   const csv='\ufeff'+[hs.map(h=>csvCell(h.name)).join(','),...rows.map(r=>r.map(csvCell).join(','))].join('\r\n');
+   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=titleFor(table).replace(/[^a-z0-9]+/gi,'_')+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),500);
+ }
+ function downloadPdf(table){
+   const {hs,rows}=visibleData(table);if(!rows.length)return alert('No visible records to export.');
+   const wrap=document.createElement('div');wrap.style.padding='14px';wrap.innerHTML=`<h2 style="font-family:Arial;margin:0 0 12px">${esc(titleFor(table))}</h2><table style="width:100%;border-collapse:collapse;font-family:Arial;font-size:9px"><thead><tr>${hs.map(h=>`<th style="border:1px solid #777;padding:5px;background:#e5e7eb">${esc(h.name)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(v=>`<td style="border:1px solid #999;padding:5px;vertical-align:top">${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+   if(typeof html2pdf==='undefined')return alert('PDF library is not available. Please ensure internet access when opening the portal.');
+   html2pdf().set({margin:5,filename:titleFor(table).replace(/[^a-z0-9]+/gi,'_')+'.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:1.5,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:hs.length>6?'landscape':'portrait'}}).from(wrap).save();
+ }
+ function initTable(table){
+   if(!eligible(table))return;table.dataset.listTools='1';
+   const hs=headers(table);if(!hs.length)return;
+   const bar=document.createElement('div');bar.className='list-tools-bar';
+   bar.innerHTML='<div class="list-tools-left"><input class="list-tools-search" type="search" placeholder="Quick search in this list..."><span class="list-tools-count">Showing 0 of 0</span></div><div class="list-tools-right"><button type="button" class="btn-advanced-filter">Advanced Filter</button><button type="button" class="btn-list-excel">Download Excel</button><button type="button" class="btn-list-pdf">Download PDF</button></div>';
+   const panel=document.createElement('div');panel.className='advanced-filter-panel';panel.innerHTML='<div class="advanced-filter-grid">'+hs.filter(h=>!h.skip).map(h=>`<div class="advanced-filter-item"><label>${esc(h.name)}</label><input data-col="${h.i}" placeholder="Filter ${esc(h.name)}"></div>`).join('')+'</div><div style="margin-top:10px"><button type="button" class="btn-clear-advanced" style="background:#64748b">Clear Filters</button></div>';
+   table.parentNode.insertBefore(bar,table);table.parentNode.insertBefore(panel,table);
+   table._listTools={bar,panel,search:bar.querySelector('.list-tools-search'),count:bar.querySelector('.list-tools-count')};
+   table._listTools.search.addEventListener('input',()=>apply(table));panel.addEventListener('input',()=>apply(table));
+   bar.querySelector('.btn-advanced-filter').onclick=()=>panel.classList.toggle('open');
+   panel.querySelector('.btn-clear-advanced').onclick=()=>{table._listTools.search.value='';panel.querySelectorAll('input').forEach(x=>x.value='');apply(table)};
+   bar.querySelector('.btn-list-excel').onclick=()=>downloadExcel(table);bar.querySelector('.btn-list-pdf').onclick=()=>downloadPdf(table);
+   apply(table);
+   new MutationObserver(()=>apply(table)).observe(table.tBodies[0]||table,{childList:true,subtree:true,characterData:true});
+ }
+ function scan(){document.querySelectorAll('table').forEach(initTable)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{scan();setTimeout(scan,700)});else{scan();setTimeout(scan,700)}
+ window.refreshAllListTools=()=>{scan();document.querySelectorAll('table[data-list-tools="1"]').forEach(apply)};
+})();
+</script>
+
 </body>
 </html>
