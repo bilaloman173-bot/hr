@@ -956,7 +956,221 @@
     .dropdown-item-row button{padding:5px 8px;font-size:10px;background:#dc2626;}
     @media(max-width:980px){.dropdown-manager-grid{grid-template-columns:1fr;}}
 
-  </style>
+  
+
+/* ============================================================
+   RESPONSIVE LAYOUT OVERRIDES — MOBILE / TABLET / DESKTOP
+   Keeps all wide data lists separate and horizontally scrollable.
+   ============================================================ */
+html { max-width: 100%; overflow-x: hidden; }
+body { min-width: 0; overflow-x: hidden; }
+.container { width: 100%; max-width: 1750px; padding-inline: 0; }
+
+/* Prevent grid/flex children from forcing page overflow */
+.container *, .form-grid > *, .dashboard-grid > *, .quick-action-grid > *,
+.tabs > *, .subtabs-shell > *, .topbar > * { min-width: 0; }
+
+/* Flexible inputs and controls */
+input, select, textarea, button { max-width: 100%; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; }
+.form-grid { grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); }
+
+/* Every list/table remains its own horizontal scroll area */
+.table-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
+}
+.table-container > table {
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
+}
+.table-container th, .table-container td { white-space: nowrap; }
+.table-container td .data-block,
+.table-container td .document-group-cell,
+.table-container td .wide-text { white-space: normal; }
+
+/* Horizontal filter/export toolbars stay separate from list content */
+.export-controls,
+.list-toolbar,
+.advanced-filter-toolbar,
+.horizontal-controls,
+.table-toolbar,
+.document-toolbar,
+.letter-toolbar,
+.compact-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+.export-controls > *,
+.list-toolbar > *,
+.advanced-filter-toolbar > *,
+.horizontal-controls > *,
+.table-toolbar > *,
+.document-toolbar > *,
+.letter-toolbar > *,
+.compact-actions > * { flex: 0 0 auto; }
+
+/* Better touch targets */
+button, .tab-btn, .sub-tab-btn { min-height: 40px; }
+.header-filter-input, .header-filter-select { min-height: 38px; }
+
+/* Sticky first column for long tables on touch devices */
+@media (max-width: 1024px) {
+  .table-container table th:first-child,
+  .table-container table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #fff;
+    box-shadow: 2px 0 0 #e2e8f0;
+  }
+  .table-container table thead th:first-child {
+    z-index: 4;
+    background: var(--table-header-bg, #0f172a);
+  }
+  .table-container table .filter-row th:first-child {
+    background: #f1f5f9;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  body { padding: 18px 14px; }
+  .dashboard-header { padding: 22px 16px; }
+  .dashboard-header h2 { font-size: 24px; padding-right: 0; }
+  .designer-badge { position: static; display: inline-block; margin-bottom: 10px; }
+  .main-tab-btn { flex: 1 1 180px; min-width: 160px; }
+  .dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .form-container, .table-container { padding: 18px; }
+  .offer-page { width: 100%; min-height: auto; }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  body { padding: 10px 8px; }
+  .container { max-width: 100%; }
+  .dashboard-header { border-radius: 9px; margin-bottom: 12px; padding: 17px 12px; }
+  .dashboard-header h2 { font-size: 19px; line-height: 1.25; letter-spacing: .2px; }
+  .dashboard-header p { font-size: 11px; line-height: 1.4; }
+
+  .topbar { justify-content: space-between; align-items: stretch; flex-wrap: wrap; gap: 7px; }
+  .user-chip { flex: 1 1 auto; justify-content: center; }
+  .btn-logout { flex: 0 0 auto; }
+
+  .main-tabs {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 6px;
+  }
+  .main-tab-btn { width: 100%; min-width: 0; flex: none; padding: 11px 10px !important; }
+
+  .subtabs-shell { padding: 9px; gap: 8px; margin-bottom: 12px; }
+  .subtabs-title { width: 100%; border-right: 0; border-bottom: 1px solid #e2e8f0; padding: 0 0 7px; }
+  .subtabs { display: flex; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 3px; }
+  .sub-tab-btn { flex: 0 0 auto; }
+
+  .dashboard-grid, .quick-action-grid { grid-template-columns: 1fr; gap: 9px; }
+  .kpi-card { padding: 14px; }
+  .kpi-value { font-size: 27px; }
+
+  .form-container, .table-container { padding: 12px; border-radius: 9px; margin-bottom: 12px; }
+  h3 { font-size: 16px; }
+  .form-grid { display: grid; grid-template-columns: 1fr !important; gap: 12px; }
+  .form-section-title { margin-top: 4px; }
+  .form-group[style*="grid-column"] { grid-column: 1 / -1 !important; }
+  .employee-id-control { grid-template-columns: 1fr !important; }
+  .input-with-action { flex-direction: column; }
+  .input-with-action button { width: 100%; }
+
+  /* Form actions are easy to tap */
+  .form-container > button,
+  .modal-actions button,
+  .letter-toolbar button { width: 100%; }
+  .modal-actions { flex-direction: column; }
+
+  /* Separate horizontal controls; never merge with table */
+  .export-controls,
+  .list-toolbar,
+  .advanced-filter-toolbar,
+  .horizontal-controls,
+  .table-toolbar,
+  .document-toolbar,
+  .letter-toolbar,
+  .compact-actions {
+    width: 100%;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    padding: 4px 0 8px;
+  }
+  .export-controls button,
+  .list-toolbar button,
+  .advanced-filter-toolbar button,
+  .horizontal-controls button,
+  .table-toolbar button,
+  .document-toolbar button,
+  .compact-actions button { width: auto !important; min-width: max-content; }
+  .document-toolbar select { min-width: 180px; }
+
+  .table-container { padding: 9px; }
+  .table-container::after {
+    content: 'Swipe left/right to view all columns';
+    display: block;
+    position: sticky;
+    left: 0;
+    width: max-content;
+    margin-top: 8px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    border: 1px solid #bfdbfe;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  th, td { padding: 10px 11px; font-size: 12px; }
+
+  .document-modal { padding: 7px; align-items: flex-start; }
+  .document-modal-panel { width: 100%; max-height: calc(100vh - 14px); border-radius: 10px; }
+  .document-modal-header { padding: 13px 12px; }
+  .document-modal-body { padding: 12px; }
+  .review-grid { grid-template-columns: 1fr; }
+  .document-list-item { grid-template-columns: 1fr; }
+
+  .offer-preview-shell { padding: 7px; }
+  .offer-page { padding: 75px 18px 70px; font-size: 9.5pt; }
+  .checklist-grid { grid-template-columns: 1fr; }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  body { padding: 6px 4px; }
+  .dashboard-header h2 { font-size: 17px; }
+  .form-container, .table-container { padding: 9px; }
+  button { padding: 9px 12px; font-size: 12px; }
+  .user-chip { font-size: 11px; padding: 7px 9px; }
+}
+
+/* Landscape phones: use two-column forms where space allows */
+@media (orientation: landscape) and (min-width: 600px) and (max-width: 900px) {
+  .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+</style>
   <!-- Client Side PDF Generation Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <!-- Client-side OCR and PDF reading: documents remain in the user's browser -->
